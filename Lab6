@@ -1,4 +1,6 @@
-*Lab 6: Cerating Beta machine in jsim*
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\nominal.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\stdcell.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\lab6ctl.jsim"
 
 
 *SUM: input is A,B,C output is Z
@@ -32,6 +34,95 @@ Xmux32 reset#32 S[31:0] 0#32 d[31:0] mux2
 Xadd4 ia[31:0] temp[31:0] S[31:0] adder32
 .ends
 
-.subckt regfile clk werf ra2sel ra[4:0] rb[4:0] rc[4:0]
-+ wdata[31:0] radata[31:0] rbdata[31:0]
-… your register file circuit here … .ends
+.subckt regfile clk werf ra2sel ra[4:0] rb[4:0] rc[4:0] wdata[31:0] radata[31:0] rbdata[31:0]
+Xregfile 
++ vdd 0 0 ra[4:0] adata[31:0] // A read port 
++ vdd 0 0 ra2mux[4:0] bdata[31:0] // B read port 
++ 0 clk werf rc[4:0] wdata[31:0] // write port 
++ $memory width=32 nlocations=31 //31 locations because the 32nd location R31 is always 0
+Xra2selmux ra2sel#5 rb[4:0] rc[4:0] ra2mux[4:0] mux2
+Xra31and4 ra[0:3] zra31and4 and4
+Xra31and2 ra[4] zra31and4 z and2
+Xra31mux z#32 adata[31:0] 0#32 radata[31:0] mux2
+*input for the mux is ra2mux-->after selecting between rb and rc*
+Xrb31and4 ra2mux[0:3] zrb31and4 and4
+Xrb31and2 ra2mux[4] zrb31and4 z1 and2
+Xrb31mux z1#32 bdata[31:0] 0#32 rbdata[31:0] mux2
+.ends
+
+
+.subckt ctl reset id[31:26] ra2sel bsel alufn[5:0] wdsel[1:0] werf moe wr
+*opcode is the opcode in the beta documentation*
+*the long ass numbers is the one in the table for diff opcode functions*
+*rmb to code for invalid opcode functions*
+Xctl vdd 0 0 id[31:26] // one read port 
++ pcsel[2:0] wasel asel ra2sel bsel alufn[5:0] wdsel[1:0] werf moe xwr 
++ $memory width=18 nlocations=64 contents=( 
++ 0b000000000000000000 // opcode=0b000000 
++ 0b000000000000000000 // opcode=0b000001 
++// opcode=0b000010
+// opcode=0b000011
+// opcode=0b000100
+// opcode=0b000101
+// opcode=0b000110
+// opcode=0b000111
+// opcode=0b001000
+// opcode=0b001001
+// opcode=0b001010
+// opcode=0b001011
+// opcode=0b001100
+// opcode=0b001101
+// opcode=0b001110
+// opcode=0b001111
+// opcode=0b010000
+// opcode=0b010001
+// opcode=0b010010
+// opcode=0b010011
+// opcode=0b010100
+// opcode=0b010101
+// opcode=0b010110
+// opcode=0b010111
+// opcode=0b011000
+// opcode=0b011001
+// opcode=0b011010
+// opcode=0b011011
+// opcode=0b011100
+// opcode=0b011101
+// opcode=0b011110
+// opcode=0b011111
+// opcode=0b100000
+// opcode=0b100001
+// opcode=0b100010
+// opcode=0b100011
+// opcode=0b100100
+// opcode=0b100101
+// opcode=0b100110
+// opcode=0b100111
+// opcode=0b101000
+// opcode=0b101001
+// opcode=0b101010
+// opcode=0b101011
+// opcode=0b101100
+// opcode=0b101101
+// opcode=0b101110
+// opcode=0b101111
+// opcode=0b110000
+// opcode=0b110001
+// opcode=0b110010
+// opcode=0b110011
+// opcode=0b110100
+// opcode=0b110101
+// opcode=0b110110
+// opcode=0b110111
+// opcode=0b111000
+// opcode=0b111001
+// opcode=0b111010
+// opcode=0b111011
+// opcode=0b111100
+// opcode=0b111101
+// opcode=0b111110
+// opcode=0b111111
++
++... + )
+...your control circuit here...
+.ends
