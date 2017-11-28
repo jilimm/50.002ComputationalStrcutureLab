@@ -1,0 +1,15 @@
+| include instruction macros and test jig
+.include /50002/beta.uasm
+.include /50002/lab5checkoff.uasm
+|pushing arguments onto the stack
+PUSH(R1)
+PUSH(R2)
+count_bull_cows: 
+PUSH(LP)
+PUSH(BP)
+MOVE(SP,BP)
+PUSH(
+
+
+StackBase: LONG(.+4) | Pointer to bottom of stack
+. = .+0x1000

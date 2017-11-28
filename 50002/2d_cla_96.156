@@ -1,0 +1,103 @@
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\nominal.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\stdcell.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\checkoff2d\2dcheckoff_100ns.jsim"
+*XOR as NAND gate: input is A,B output is C
+.subckt xorInNand2 a b c
+XxorInNand1 a b c1
+XxorInNand2 a c1 c2
+XxorInNand3 b c1 c3
+XxorInNand4 c2 c3 c
+.ends
+*SUM: input is A,B,C output is Z
+.subckt sum3 a b c z
+Xsum1 a b z1 xor2
+Xsum2 z1 c z xor2
+.ends
+*Cout: input is A,B,C output is Z
+.subckt cout3 a b c z 
+Xnand1 a b w nand2
+Xnand2 a c x nand2
+Xnand3 b c y nand2
+Xnand4 w x y z nand3
+.ends
+*P for carry look ahead adder
+.subckt claP a b p
+Xadderp a b p or2
+.ends
+*G for carry look ahead adder
+.subckt claG a b g
+Xadderg a b g and2
+.ends
+*CLA Cout 
+.subckt claCout p g c z
+XclaCout1 p c z1 and2
+XclaCout2 g z1 z or2
+.ends
+*FA full bit adder: input is Ai,Bi,Cin output is S, Pi and Gi
+.subckt FA a b ci s g p 
+XSUM a b ci s sum3
+XadderP a b p claP
+Xadderg a b g claG
+.ends 
+*PGgener unit: input is Gj1k Pj1k Gij Pij Ci ouput is Gik Pik Cj1 (Ciout can be connected directly to Ci)
+*gp inputs (put the on top on first, then sideeways gp input then c input)
+*gp output (sideways c output first then top C output)
+.subckt claPGgener Gj1k Pj1k Gij Pij Ci Gik Pik Cj1
+XclaPGgener2 Pij Ci Cj11 and2
+XclaPGgener3 Cj11 Gij Cj1 or2
+XclaPGgener4 Pj1k Gij Gik1 and2
+XclaPGgener5 Gik1 Gj1k Gik or2
+XclaPGgener6 Pij Pj1k Pik and2
+.ends
+.subckt adder32 ALUFN[0] A[31:0] B[31:0] s[31:0] z v n
+*setting the inputs XB and c0 (overcall Cin of the adder)
+Xadder32id1 B[31:0] ALUFN[0]#32 XB[31:0] xor2
+Xadder32id2 ALUFN[0] ci0 buffer
+*setting up 32 adder units for the CLA
+Xadderunits A[31:0] XB[31:0] ci[31:0] s[31:0] g[31:0] p[31:0] FA
+*setting up the 32 pggenerators directly below each adder
+Xpggener1 g1 p1 g0 p0 ALUFN[0] g0n1 p0n1 ci1 claPGgener
+Xpggener3 g3 p3 g2 p2 ci2 g2n3 p2n3 ci3 claPGgener
+Xpggener3a g2n3 p2n3 g0n1 p0n1 ALUFN[0] g0n3 p0n3 ci2 claPGgener
+Xpggener5 g5 p5 g4 p4 c4b g4n5 p4n5 ci5 claPGgener
+Xpggener7 g7 p7 g6 p6 c6a g6n7 p6n7 ci7 claPGgener
+Xpggener7a g6n7 p6n7 g4n5 p4n5 ci4 g4n7 p4n7 ci6 claPGgener
+Xpggener7b g4n7 p4n7 g0n3 p0n3 ALUFN[0] g0n7 p0n7 ci4 claPGgener
+Xpggener9 g9 p9 g8 p8 c8c g8n9 p8n9 ci9 claPGgener
+Xpggener11 g11 p11 g10 p10 ci10 g10n11 p10n11 ci11 claPGgener
+Xpggener11a g10n11 p10n11 g8n9 p8n9 ci8 g8n11 p8n11 ci10 claPGgener
+Xpggener13 g13 p13 g12 p12 ci12 g12n13 p12n13 ci13 claPGgener
+Xpggener15 g15 p15 g14 p14 ci14 g14n15 p14n15 ci15 claPGgener
+Xpggener15a g14n15 p14n15 g12n13 p12n13 ci12 g12n15 p12n15 ci14 claPGgener
+Xpggener15b g12n15 p12n15 g8n11 p8n11 ci8 g8n15 p8n15 ci12 claPGgener
+Xpggener15c g8n15 p8n15 g0n7 p0n7 ALUFN[0] g0n15 p0n15 ci8 claPGgener
+Xpggener17 g17 p17 g16 p16 ci16 g16n17 p16n17 ci17 claPGgener
+Xpggener19 g19 p19 g18 p18 ci18 g18n19 p18n19 ci19 claPGgener
+Xpggener19a g18n19 p18n19 g16n17 p16n17 ci16 g16n19 p16n19 ci18 claPGgener 
+Xpggener21 g21 p21 g20 p20 ci20 g20n21 p20n21 ci21 claPGgener
+Xpggener23 g23 p23 g22 p22 ci22 g22n23 p22n23 ci23 claPGgener
+Xpggener23a g22n23 p22n23 g20n21 p20n21 ci20 g20n23 p20n23 ci22 claPGgener
+Xpggener23b g20n23 p20n23 g16n19 p16n19 ci16 g16n23 p16n23 ci20 claPGgener
+Xpggener23c g16n23 p16n23 g0n15 p0n15 ALUFN[0] g0n23 p0n23 ci16 claPGgener
+Xpggener25 g25 p25 g24 p24 ci24 g24n25 p24n25 ci25 claPGgener
+Xpggener27 g27 p27 g26 p26 ci26 g26n27 p26n27 ci27 claPGgener
+Xpggener27a g26n27 p26n27 g24n25 p24n25 ci24 g24n27 p24n27 ci26 claPGgener
+Xpggener29 g29 p29 g28 p28 ci28 g28n29 p28n29 ci29 claPGgener
+Xpggener31 g31 p31 g30 p30 ci30 g30n31 p30n31 ci31 claPGgener
+Xpggener31a g30n31 p30n31 g28n29 p28n29 ci28 g28n31 p28n31 ci30 claPGgener
+Xpggener31b g28n31 p28n31 g24n27 p24n27 ci24 g24n31 p24n31 ci28 claPGgener
+Xpggener31c g24n31 p24n31 g0n23 p0n23 ALUFN[0] g0n31 p0n31 ci24 claPGgener
+*calculating V from the formula
+Xinv1 S31 S31i inverter
+XandA A31 XB31 S31i v1 and3
+Xinv2 A31 A31inv inverter
+Xinv3 B31 XB31inv inverter
+XandB A31inv XB31inv S31 v2 and3
+Xidv v1 v2 v or2
+*calculating n
+XN S31 n buffer
+*Calcuating z (check if all output is 0)
+Xid5 S[7:0] S[15:8] S[23:16] S[31:24] PP[7:0] or4
+Xid6 PP[1:0] PP[3:2] PP[5:4] PP[7:6] Y[1:0] or4
+Xid7 Y1 Y0 z nor2
+.ends

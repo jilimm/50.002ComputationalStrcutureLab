@@ -1,0 +1,21 @@
+* circuit for Lab#1, parts C thru F
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\nominal.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\lab1checkoff.jsim"
+
+* INVERTER: input is O, output is Z
+.subckt inv a z
+MPD1 z a 0 0 NENH sw=16 sl=1
+MPU1 z a vdd vdd PENH sw=16 sl=1
+.ends
+
+.subckt F A B C Z
+Xinv d z inv
+//pull up circuit
+MPU1 e C vdd vdd PENH sw=8 sl=1
+MPU2 d B e vdd PENH sw=8 sl=1
+MPU3 d A e vdd PENH sw=8 sl=1
+//pull down circuit
+MPD1 d C 0 0 NENH sw=8 sl=1
+MPD2 1 B 0 0 NENH sw=8 sl=1
+MPD3 d A 1 0 NENH sw=8 sl=1
+.ends

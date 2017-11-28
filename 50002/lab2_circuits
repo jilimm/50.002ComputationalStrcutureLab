@@ -1,0 +1,76 @@
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\nominal.jsim"
+.include "C:\Users\Jing Yun\Desktop\50.002 Computation Structure\50002\50002\lab2checkoff.jsim"
+* 2-input NAND: inputs are A and B, output is Z
+.subckt nand2 a b z
+MPD1 z a 1 0 NENH sw=8 sl=1
+MPD2 1 b 0 0 NENH sw=8 sl=1
+MPU1 z a vdd vdd PENH sw=8 sl=1
+MPU2 z b vdd vdd PENH sw=8 sl=1
+.ends
+* INVERTER: input is A, output is Z
+.subckt inv a z
+MPD1 z a 0 0 NENH sw=16 sl=1
+MPU1 z a vdd vdd PENH sw=16 sl=1
+.ends
+*NOR: input is A,B output is Z
+.subckt nor2 a b z
+MPD1 z a 0 0 NENH sw=8 sl=1
+MPD2 z b 0 0 NENH sw=8 sl=1
+MPU1 c a vdd vdd PENH sw=8 sl=1
+MPU2 z b c vdd PENH sw=8 sl=1
+.ends
+*XOR: input is A,B output is Z
+.subckt xor2 a b z
+Xnor a b x nor2 
+MPD1 c b 0 0 NENH sw=2 sl=1
+MPD2 z a c 0 NENH sw=2 sl=1
+MPU1 d a vdd vdd PENH sw=4 sl=1
+MPU2 z x d vdd PENH sw=4 sl=1
+MPU3 d b vdd vdd PENH sw=4 sl=1
+MPD3 z x 0 0 NENH sw=2 sl=1
+.ends 
+*XNOR: input is A,B output is Z
+.subckt xnor2 a b z
+Xnand a b x nand2 
+MPD1 c b 0 0 NENH sw=2 sl=1
+MPD2 z x c 0 NENH sw=2 sl=1
+MPU1 z x vdd vdd PENH sw=4 sl=1
+MPU2 e b vdd vdd PENH sw=4 sl=1
+MPU3 z a e vdd PENH sw=4 sl=1
+MPD3 c a 0 0 NENH sw=2 sl=1
+.ends
+*SUM: input is A,B,C output is Z
+.subckt sum3 a b c z
+Xxor a b x xor2
+Xxor1 x c z xor2
+.ends
+*NAND 3-input: input is A,B,C output is Z
+.subckt nand3 a b c z
+MPD1 d c 0 0 NENH sw=8 sl=1
+MPD2 e b d 0 NENH sw=8 sl=1
+MPD3 z a e 0 NENH sw=8 sl=1
+MPU1 z c vdd vdd PENH sw=8 sl=1
+MPU2 z b vdd vdd PENH sw=8 sl=1
+MPU3 z a vdd vdd PENH sw=8 sl=1
+.ends
+*Cout: input is A,B,C output is Z
+.subckt cout3 a b c z 
+Xnand1 a b w nand2
+Xnand2 a c x nand2
+Xnand3 b c y nand2
+Xnand4 w x y z nand3
+.ends
+*FA full bit adder: input is A,B,Cin output is S, Cout
+.subckt FA a b ci s co
+XSUM a b ci s sum3
+XCarry a b ci co cout3
+.ends 
+.subckt ADDER4 a3 a2 a1 a0 b3 b2 b1 b0 s4 s3 s2 s1 s0
+*remeber that node named "0" is the ground node
+*nodes c0 through c3 are internal to the ADDER module
+Xbit0 a0 b0 0 s0 c0 FA
+Xbit1 a1 b1 c0 s1 c1 FA
+Xbit2 a2 b2 c1 s2 c2 FA
+Xbit3 a3 b3 c2 s3 s4 FA
+.ends
+.plot ADDER4.c0

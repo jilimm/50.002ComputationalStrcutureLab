@@ -1,0 +1,112 @@
+.include beta.uasm
+.include lab5checkoff.uasm
+
+count_bull_cows:
+PUSH(LP)
+PUSH(BP)
+MOVE(SP,BP)
+PUSH(R1) |used for temporary variables
+PUSH(R2)
+PUSH(R3)
+LD(BP,-12,R2) |a==>R2
+LD(BP,-16,R3) |b==>R3
+PUSH(R4) |bulls==>R4
+PUSH(R5) |cows==>R5
+PUSH(R6) |btemp==>R6
+PUSH(R7) |atry==>R7
+PUSH(R8) |btry==>R8
+PUSH(R9) |mask==>R9
+PUSH(R10) |i==>R10
+PUSH(R11) |j==>R11
+
+|CMOVE(0x1234,R2) |a=0x0000
+|CMOVE(0x1234,R3)|b=0x1234
+CMOVE(0,R4)|bulls=0
+CMOVE(0xF,R9) |mask=0xF
+CMOVE(0,R10) |i==0 (instantiate)
+
+compute_bulls_for:
+CMPLTC(R10,4,R1) |check if i<4
+BEQ(R1, compute_cows, R31) |if i is !<4 [0] then exit the go into computing cows
+
+compute_bulls_if:
+AND(R2,R9,R1)|a&mask
+AND(R3,R9,R0)|b&mask
+CMPEQ(R1,R0,R1) |check if (a&mask)==(b&mask)
+BEQ(R1, exit_bull_if, R31) |if not equals (0) then go to exit_bull_if the go into computing cows
+ADDC(R4,1,R4) |bulls=bulls+1
+OR(R2,R9,R2) |a=a|mask
+OR(R3,R9,R3) |b=b|mask
+
+exit_bull_if:
+SHLC(R9,4,R9) |mask=mask<<4
+ADDC(R10,1,R10) |i increments by 1
+BR(compute_bulls_for) |go back into the compute_bull_for loop
+
+
+compute_cows:
+CMOVE(0,R5) |cows=0 
+CMOVE(0,R10) |re-instantiate integer i as 0
+
+compute_cows_for1:
+CMPLTC(R10,4,R1) |check if i<4
+BEQ(R1, return_line, R31) |if i is !<4 [0] then exit the for loop go into return line
+ANDC (R2,0xF, R7) |atry = a & 0xF
+SRAC (R2, 4, R2)  | a = a >> 4
+
+compute_cow_if1:
+CMPEQC (R7, 0xF, R1) | if (atry != 0xF) skip if its equal [1]
+BNE(R1, compute_cow_exit_if1, R31) |skip if loop if R16==1 by jumping to end of for1 loop
+ADD(R3,R31,R6)|btemp =b
+CMOVE(0xF, R9) |mask=0xF
+CMOVE(0,R11) |instantiate j to 0 
+
+compute_cow_for2:
+CMPLTC(R11, 4, R1) |check that j is <4
+BEQ(R1, compute_cow_exit_if1, R31) |if j is not <4 (0) then exit to end of for1 loop 
+ANDC(R6,0xF,R8)|btry = btemp & 0xF
+SRAC(R6,4,R6)|btemp=btemp >>4
+
+
+compute_cow_if2:
+CMPEQ(R7,R8,R1)|btry==atry
+BEQ(R1,compute_cow_exit_if2,R31) |if btry!= atry (0) then exit the if2 loop
+ADDC(R5,1,R5) |cows=cows+1
+OR(R3,R9,R3)|b=b or mask
+BR(compute_cow_exit_if1) |Branch over to the next A digit
+
+compute_cow_exit_if2:
+SHLC(R9,4,R9) |mask=mask<<4
+ADDC(R11,1,R11) | increment j by 1
+BR(compute_cow_for2) |go back to the for loop
+
+compute_cow_exit_if1:
+ADDC(R10,1,R10) |incrementing i by 1
+BR(compute_cows_for1)|go back to the for the 1st for loop
+
+return_line:
+SHLC(R4,4,R4) |bulls<<4
+ADD(R5,R4,R0)|return bulls+cows
+
+
+
+POP(R11)
+POP(R10)
+POP(R9)
+POP(R8)
+POP(R7)
+POP(R6)
+POP(R5)
+POP(R4)
+POP(R3)
+POP(R2)
+POP(R1)
+MOVE(BP,SP)
+POP(BP)
+POP(LP)
+RTN()
+
+
+StackBase: LONG(.+4)
+. = .+0x1000
+
